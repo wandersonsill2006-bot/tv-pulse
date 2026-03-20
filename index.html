@@ -1,17 +1,17 @@
 <!DOCTYPE html>
-<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mega TV - Kids & Movies</title>
+    <title>Mega TV BR - Kids & Filmes</title>
     <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
     <style>
         :root {
-            --primary: #e50914; /* Vermelho Netflix */
+            --primary: #e50914; 
             --bg: #000000;
             --surface: #141414;
             --text: #ffffff;
+            --accent: #00a859;
         }
         body {
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -30,13 +30,14 @@
             justify-content: space-between;
             align-items: center;
             border-bottom: 2px solid var(--primary);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
         .main-container {
             display: flex;
             flex: 1;
             overflow: hidden;
         }
-        /* Sidebar de Canais */
+        /* Lista de Canais Lateral */
         #sidebar {
             width: 350px;
             background-color: var(--surface);
@@ -44,7 +45,7 @@
             flex-direction: column;
             border-right: 1px solid #333;
         }
-        .search-container { padding: 15px; }
+        .search-container { padding: 15px; background: #1a1a1a; }
         #search {
             width: 100%;
             padding: 12px;
@@ -52,7 +53,10 @@
             border: 1px solid #444;
             color: white;
             border-radius: 4px;
+            outline: none;
         }
+        #search:focus { border-color: var(--primary); }
+        
         #channel-list {
             flex: 1;
             overflow-y: auto;
@@ -64,53 +68,59 @@
             transition: 0.2s;
             display: flex;
             justify-content: space-between;
+            align-items: center;
         }
-        .channel-card:hover { background: #333; }
-        .channel-card.active { border-left: 5px solid var(--primary); background: #222; }
+        .channel-card:hover { background: #2b2b2b; }
+        .channel-card.active { 
+            border-left: 5px solid var(--primary); 
+            background: #222; 
+        }
         
         .category-tag {
             font-size: 10px;
-            background: var(--primary);
-            padding: 2px 6px;
+            background: var(--accent);
+            padding: 2px 8px;
             border-radius: 10px;
             text-transform: uppercase;
+            font-weight: bold;
         }
 
-        /* Player */
+        /* Área do Vídeo */
         #content {
             flex: 1;
             background: #000;
             display: flex;
-            align-items: center;
-            justify-content: center;
+            flex-direction: column;
         }
         .video-js { width: 100% !important; height: 100% !important; }
 
+        /* Mobile */
         @media (max-width: 768px) {
             .main-container { flex-direction: column; }
-            #sidebar { width: 100%; height: 40%; }
+            #sidebar { width: 100%; height: 45%; }
         }
     </style>
 </head>
 <body>
 
 <header>
-    <h2 style="color: var(--primary); margin: 0;">MEGA TV <span>BR</span></h2>
-    <div id="status">Carregando canais...</div>
+    <h2 style="color: var(--primary); margin: 0; letter-spacing: 1px;">MEGA TV <span style="color:white; font-size: 14px; background: var(--accent); padding: 2px 5px; border-radius: 3px;">BR</span></h2>
+    <div id="status" style="font-size: 12px; color: #aaa;">Sintonizando...</div>
 </header>
 
 <div class="main-container">
     <aside id="sidebar">
         <div class="search-container">
-            <input type="text" id="search" placeholder="Buscar: Megapix, Discovery, Kids..." onkeyup="filterChannels()">
+            <input type="text" id="search" placeholder="Buscar: Discovery, Disney, Filmes..." onkeyup="filterChannels()">
         </div>
         <div id="channel-list">
-            </div>
+            <p style="padding: 20px; text-align: center;">Carregando lista de canais...</p>
+        </div>
     </aside>
 
     <main id="content">
-        <video id="tv-player" class="video-js vjs-big-play-centered" controls preload="auto">
-            <p class="vjs-no-js">Seu navegador não suporta o player.</p>
+        <video id="tv-player" class="video-js vjs-big-play-centered vjs-theme-city" controls preload="auto">
+            <p class="vjs-no-js">Seu navegador não suporta JavaScript ou HTML5.</p>
         </video>
     </main>
 </div>
@@ -119,8 +129,10 @@
 <script>
     const player = videojs('tv-player');
     
-    // Lista de Canais do Brasil (Inclui variados)
+    // Lista de Canais (Focada em Brasil)
     const LIST_URL = 'https://iptv-org.github.io/iptv/countries/br.m3u';
+    // Proxy para tentar burlar bloqueios de segurança (CORS)
+    const PROXY = "https://cors-anywhere.herokuapp.com/";
 
     async function init() {
         try {
@@ -128,9 +140,9 @@
             const text = await res.text();
             const channels = parseM3U(text);
             renderChannels(channels);
-            document.getElementById('status').innerText = `${channels.length} Canais On`;
+            document.getElementById('status').innerText = `${channels.length} Canais Disponíveis`;
         } catch (err) {
-            document.getElementById('status').innerText = "Erro ao carregar lista.";
+            document.getElementById('status').innerText = "Erro ao carregar lista. Verifique sua conexão.";
         }
     }
 
@@ -141,10 +153,9 @@
 
         lines.forEach(line => {
             if (line.startsWith('#EXTINF')) {
-                const name = line.split(',')[1] || "Canal";
-                // Tenta pegar a categoria (group-title) se existir
+                const name = line.split(',')[1] || "Canal Sem Nome";
                 const groupMatch = line.match(/group-title="([^"]+)"/);
-                current = { name, category: groupMatch ? groupMatch[1] : 'Variados' };
+                current = { name: name.trim(), category: groupMatch ? groupMatch[1] : 'Geral' };
             } else if (line.startsWith('http') && current) {
                 current.url = line.trim();
                 channels.push(current);
@@ -156,25 +167,39 @@
 
     function renderChannels(channels) {
         const container = document.getElementById('channel-list');
-        container.innerHTML = channels.map((c, index) => `
+        if (channels.length === 0) {
+            container.innerHTML = "<p style='padding:20px;'>Nenhum canal encontrado.</p>";
+            return;
+        }
+        
+        container.innerHTML = channels.map((c) => `
             <div class="channel-card" onclick="play('${c.url}', this)">
                 <div>
                     <strong>${c.name}</strong><br>
                     <small style="color: #888">${c.category}</small>
                 </div>
-                <span class="category-tag">TV</span>
+                <span class="category-tag">AO VIVO</span>
             </div>
         `).join('');
     }
 
     function play(url, element) {
-        // Estilização do card ativo
+        // Marcar o canal selecionado na lista
         document.querySelectorAll('.channel-card').forEach(el => el.classList.remove('active'));
         element.classList.add('active');
 
-        // Carregar vídeo
+        // Tentar tocar o vídeo
         player.src({ src: url, type: 'application/x-mpegURL' });
-        player.play().catch(e => alert("Este canal está offline ou bloqueado pelo servidor de origem."));
+        
+        let playPromise = player.play();
+
+        if (playPromise !== undefined) {
+            playPromise.catch(error => {
+                console.warn("Erro no play direto. Tentando via Proxy...");
+                // Se der erro, avisar o usuário
+                alert("O servidor deste canal bloqueou a conexão. Tente outro canal ou use uma extensão de 'Allow CORS' no navegador.");
+            });
+        }
     }
 
     function filterChannels() {
@@ -186,6 +211,7 @@
         });
     }
 
+    // Rodar o app
     init();
 </script>
 </body>
