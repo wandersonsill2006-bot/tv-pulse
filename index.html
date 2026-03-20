@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mega TV - Kids & Movies</title>
+    <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
+    <style>
+        :root {
+            --primary: #e50914; /* Vermelho Netflix */
+            --bg: #000000;
+            --surface: #141414;
+            --text: #ffffff;
+        }
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+        header {
+            background-color: var(--surface);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--primary);
+        }
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        /* Sidebar de Canais */
+        #sidebar {
+            width: 350px;
+            background-color: var(--surface);
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #333;
+        }
+        .search-container { padding: 15px; }
+        #search {
+            width: 100%;
+            padding: 12px;
+            background: #222;
+            border: 1px solid #444;
+            color: white;
+            border-radius: 4px;
+        }
+        #channel-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+        .channel-card {
+            padding: 15px;
+            border-bottom: 1px solid #222;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            justify-content: space-between;
+        }
+        .channel-card:hover { background: #333; }
+        .channel-card.active { border-left: 5px solid var(--primary); background: #222; }
+        
+        .category-tag {
+            font-size: 10px;
+            background: var(--primary);
+            padding: 2px 6px;
+            border-radius: 10px;
+            text-transform: uppercase;
+        }
+
+        /* Player */
+        #content {
+            flex: 1;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .video-js { width: 100% !important; height: 100% !important; }
+
+        @media (max-width: 768px) {
+            .main-container { flex-direction: column; }
+            #sidebar { width: 100%; height: 40%; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h2 style="color: var(--primary); margin: 0;">MEGA TV <span>BR</span></h2>
+    <div id="status">Carregando canais...</div>
+</header>
+
+<div class="main-container">
+    <aside id="sidebar">
+        <div class="search-container">
+            <input type="text" id="search" placeholder="Buscar: Megapix, Discovery, Kids..." onkeyup="filterChannels()">
+        </div>
+        <div id="channel-list">
+            </div>
+    </aside>
+
+    <main id="content">
+        <video id="tv-player" class="video-js vjs-big-play-centered" controls preload="auto">
+            <p class="vjs-no-js">Seu navegador não suporta o player.</p>
+        </video>
+    </main>
+</div>
+
+<script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+<script>
+    const player = videojs('tv-player');
+    
+    // Lista de Canais do Brasil (Inclui variados)
+    const LIST_URL = 'https://iptv-org.github.io/iptv/countries/br.m3u';
+
+    async function init() {
+        try {
+            const res = await fetch(LIST_URL);
+            const text = await res.text();
+            const channels = parseM3U(text);
+            renderChannels(channels);
+            document.getElementById('status').innerText = `${channels.length} Canais On`;
+        } catch (err) {
+            document.getElementById('status').innerText = "Erro ao carregar lista.";
+        }
+    }
+
+    function parseM3U(data) {
+        const lines = data.split('\n');
+        const channels = [];
+        let current = null;
+
+        lines.forEach(line => {
+            if (line.startsWith('#EXTINF')) {
+                const name = line.split(',')[1] || "Canal";
+                // Tenta pegar a categoria (group-title) se existir
+                const groupMatch = line.match(/group-title="([^"]+)"/);
+                current = { name, category: groupMatch ? groupMatch[1] : 'Variados' };
+            } else if (line.startsWith('http') && current) {
+                current.url = line.trim();
+                channels.push(current);
+                current = null;
+            }
+        });
+        return channels;
+    }
+
+    function renderChannels(channels) {
+        const container = document.getElementById('channel-list');
+        container.innerHTML = channels.map((c, index) => `
+            <div class="channel-card" onclick="play('${c.url}', this)">
+                <div>
+                    <strong>${c.name}</strong><br>
+                    <small style="color: #888">${c.category}</small>
+                </div>
+                <span class="category-tag">TV</span>
+            </div>
+        `).join('');
+    }
+
+    function play(url, element) {
+        // Estilização do card ativo
+        document.querySelectorAll('.channel-card').forEach(el => el.classList.remove('active'));
+        element.classList.add('active');
+
+        // Carregar vídeo
+        player.src({ src: url, type: 'application/x-mpegURL' });
+        player.play().catch(e => alert("Este canal está offline ou bloqueado pelo servidor de origem."));
+    }
+
+    function filterChannels() {
+        const query = document.getElementById('search').value.toLowerCase();
+        const cards = document.querySelectorAll('.channel-card');
+        cards.forEach(card => {
+            const name = card.innerText.toLowerCase();
+            card.style.display = name.includes(query) ? 'flex' : 'none';
+        });
+    }
+
+    init();
+</script>
+</body>
+</html>
