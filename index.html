@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineStream Ultra - Sucesso</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --bg: #050505; --accent: #d112ff; }
+        body { background-color: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
+        
+        .header { padding: 15px 5%; background: #000; position: fixed; width: 100%; z-index: 1000; display: flex; justify-content: space-between; box-sizing: border-box; }
+        .logo { font-size: 1.5rem; font-weight: 900; }
+        .logo span { color: var(--accent); }
+
+        .hero { height: 50vh; background-size: cover; background-position: center; display: flex; align-items: center; padding: 0 5%; position: relative; }
+        .hero::before { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, #050505, transparent); }
+        
+        .main-container { padding: 30px 5%; }
+        .movie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; }
+        .movie-card { background: #111; border-radius: 8px; overflow: hidden; cursor: pointer; border: 1px solid transparent; }
+        .movie-card:hover { border-color: var(--accent); transform: scale(1.02); transition: 0.3s; }
+        .movie-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
+
+        /* Player Modal que NÃO DÁ ERRO */
+        #player-modal { display: none; position: fixed; inset: 0; background: #000; z-index: 9999; }
+        .video-container { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+        iframe { width: 90%; height: 80%; border: 2px solid var(--accent); border-radius: 10px; }
+        .close-btn { position: absolute; top: 20px; right: 30px; font-size: 2.5rem; color: white; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="logo">CINE<span>STREAM</span></div>
+    </header>
+
+    <div id="player-modal">
+        <span class="close-btn" onclick="fechar()">✕</span>
+        <div class="video-container" id="player-area">
+            </div>
+    </div>
+
+    <section class="hero" id="banner">
+        <div style="position:relative; z-index:2;">
+            <h1 id="titulo">Carregando...</h1>
+            <button onclick="abrir()" style="background:var(--accent); color:white; border:none; padding:12px 25px; border-radius:5px; cursor:pointer;">ASSISTIR AGORA</button>
+        </div>
+    </section>
+
+    <div class="main-container">
+        <div class="movie-grid" id="grid"></div>
+    </div>
+
+    <script>
+        const API_KEY = '223cb5a235d933b296887f55b2da4f4f';
+
+        async function carregar() {
+            const res = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&language=pt-BR`);
+            const data = await res.json();
+            const filmes = data.results;
+
+            document.getElementById('banner').style.backgroundImage = `url('https://image.tmdb.org/t/p/original${filmes[0].backdrop_path}')`;
+            document.getElementById('titulo').innerText = filmes[0].title;
+
+            document.getElementById('grid').innerHTML = filmes.map(f => `
+                <div class="movie-card" onclick="abrir()">
+                    <img src="https://image.tmdb.org/t/p/w500${f.poster_path}">
+                </div>
+            `).join('');
+        }
+
+        function abrir() {
+            document.getElementById('player-modal').style.display = 'block';
+            // Usando um trailer do YouTube como teste definitivo
+            document.getElementById('player-area').innerHTML = `
+                <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1" allow="autoplay; fullscreen"></iframe>
+            `;
+        }
+
+        function fechar() {
+            document.getElementById('player-modal').style.display = 'none';
+            document.getElementById('player-area').innerHTML = '';
+        }
+
+        carregar();
+    </script>
+</body>
+</html>
