@@ -4,77 +4,67 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="no-referrer">
-    <title>CineStreamFlix | Automação Wanderson</title>
+    <title>CineStreamFlix | Wanderson</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
-        :root { --primary: #e50914; --bg: #050505; --card-bg: #111; }
+        :root { --primary: #e50914; --bg: #050505; --card-bg: #181818; }
         
         body { background-color: var(--bg); color: white; font-family: 'Poppins', sans-serif; margin: 0; overflow-x: hidden; }
         
         header { 
-            padding: 40px 20px; 
+            padding: 30px 20px; 
             text-align: center; 
-            background: linear-gradient(to bottom, #1a0202, transparent);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            backdrop-filter: blur(10px);
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+            position: sticky; top: 0; z-index: 100; backdrop-filter: blur(15px);
         }
 
-        h1 { color: var(--primary); font-size: 2.5rem; margin: 0 0 20px 0; letter-spacing: 4px; text-transform: uppercase; }
+        h1 { color: var(--primary); font-size: 2.2rem; margin: 0 0 15px 0; letter-spacing: 3px; text-shadow: 2px 2px 10px rgba(229, 9, 20, 0.5); }
 
-        .search-container { position: relative; max-width: 600px; margin: 0 auto; margin-bottom: 20px; }
+        .search-container { max-width: 500px; margin: 0 auto; }
         .search-container input {
-            width: 100%;
-            padding: 15px 25px;
-            border-radius: 30px;
-            border: 2px solid #333;
-            background: rgba(0,0,0,0.8);
-            color: white;
-            font-size: 1.1rem;
-            outline: none;
-            transition: 0.3s;
+            width: 100%; padding: 12px 20px; border-radius: 25px; border: 1px solid #444;
+            background: rgba(255,255,255,0.1); color: white; outline: none; transition: 0.3s;
         }
-
-        .category-title { padding-left: 20px; font-size: 1.8rem; color: #fff; margin: 40px 0 10px 40px; border-left: 5px solid var(--primary); }
+        .search-container input:focus { border-color: var(--primary); background: rgba(255,255,255,0.2); }
 
         .catalogo-row { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
-            gap: 25px; 
-            padding: 20px 40px 40px 40px; 
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
+            gap: 20px; padding: 40px; 
         }
 
         .item-card { 
-            background: var(--card-bg); 
-            border-radius: 12px; 
-            overflow: hidden; 
-            transition: 0.4s; 
-            cursor: pointer; 
-            border: 1px solid #222;
-            position: relative;
+            background: var(--card-bg); border-radius: 10px; overflow: hidden; 
+            transition: 0.4s; cursor: pointer; border: 1px solid #222; position: relative;
         }
-        .item-card:hover { transform: scale(1.05); border-color: var(--primary); z-index: 5; }
+        .item-card:hover { transform: translateY(-10px); border-color: var(--primary); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
         
-        .video-thumb { 
-            width: 100%; 
-            height: 150px; 
-            background: linear-gradient(45deg, #111, #222);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
+        /* Thumbnail automática usando o próprio vídeo */
+        .video-preview { 
+            width: 100%; height: 140px; background: #000; position: relative; overflow: hidden;
+        }
+        .video-preview video {
+            width: 100%; height: 100%; object-fit: cover; opacity: 0.7;
+        }
+        .item-card:hover .video-preview video { opacity: 1; transform: scale(1.1); transition: 0.5s; }
+
+        .hd-badge {
+            position: absolute; top: 10px; right: 10px; background: var(--primary);
+            color: white; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 3px;
         }
 
-        .item-info { padding: 15px; text-align: center; font-size: 0.8rem; color: #aaa; }
+        .play-icon {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 40px; opacity: 0.8;
+        }
 
-        #modal-player { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; }
-        .container-video { width: 100%; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        #player-area { width: 100%; height: 80vh; background: #000; }
-        video { width: 100%; height: 100%; }
-        
-        .btn-fechar { position: absolute; top: 20px; right: 30px; color: #fff; font-size: 50px; cursor: pointer; z-index: 1001; }
-        .empty-msg { text-align: center; color: #666; grid-column: 1 / -1; padding: 50px; }
+        .item-info { padding: 12px; font-size: 0.85rem; background: #181818; }
+        .item-info strong { display: block; margin-bottom: 5px; color: #fff; }
+        .item-info span { color: #777; font-size: 0.75rem; }
+
+        /* Estilo do Player */
+        #modal-player { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 2000; }
+        video#main-player { width: 100%; height: 100%; }
+        .btn-fechar { position: absolute; top: 20px; right: 30px; color: #fff; font-size: 40px; cursor: pointer; z-index: 2100; text-shadow: 0 0 10px #000; }
     </style>
 </head>
 <body>
@@ -82,65 +72,69 @@
     <header>
         <h1>CINESTREAMFLIX</h1>
         <div class="search-container">
-            <input type="text" id="inputBusca" placeholder="Filtrar por data ou nome..." onkeyup="filtrarLocal()">
+            <input type="text" id="inputBusca" placeholder="Pesquisar filme..." onkeyup="filtrarLocal()">
         </div>
     </header>
 
-    <h2 class="category-title">Adicionados Recentemente via Bot</h2>
-    <div id="lista-automatica" class="catalogo-row">
-        <p class="empty-msg">Aguardando o robô enviar filmes...</p>
-    </div>
+    <div id="lista-automatica" class="catalogo-row"></div>
 
     <div id="modal-player">
         <span class="btn-fechar" onclick="fecharPlayer()">&times;</span>
-        <div class="container-video">
-            <div id="player-area"></div>
-        </div>
+        <video id="main-player" controls autoplay></video>
     </div>
 
     <script>
         async function carregarFilmesDoBot() {
             const container = document.getElementById('lista-automatica');
-            
             try {
                 const response = await fetch('filmes.json');
-                if (!response.ok) throw new Error("Arquivo não encontrado");
-                
                 const filmes = await response.json();
                 container.innerHTML = '';
 
                 filmes.reverse().forEach((filme, index) => {
                     const card = document.createElement('div');
                     card.className = 'item-card';
-                    card.setAttribute('data-nome', filme.data);
                     
+                    // Extrai o nome da legenda separada por "|" no bot
+                    const partes = filme.data.split(' | ');
+                    const nome = partes[0] || "Filme Sem Título";
+                    const data = partes[1] || "";
+
                     card.innerHTML = `
-                        <div class="video-thumb">🎬</div>
+                        <div class="video-preview">
+                            <span class="hd-badge">HD</span>
+                            <div class="play-icon">▶</div>
+                            <video src="${filme.url}#t=0.5" preload="metadata" muted></video>
+                        </div>
                         <div class="item-info">
-                            <strong>Filme #${filmes.length - index}</strong><br>
-                            ${filme.data}
+                            <strong>${nome}</strong>
+                            <span>${data}</span>
                         </div>
                     `;
                     
                     card.onclick = () => abrirPlayer(filme.url);
                     container.appendChild(card);
                 });
-
             } catch (err) {
-                console.log("Ainda não existem filmes no banco de dados.");
+                container.innerHTML = '<p style="text-align:center; color:#666;">Nenhum filme encontrado ainda.</p>';
             }
         }
 
         function abrirPlayer(url) {
             const modal = document.getElementById('modal-player');
-            const playerArea = document.getElementById('player-area');
+            const video = document.getElementById('main-player');
             modal.style.display = 'block';
-            playerArea.innerHTML = `<video controls autoplay src="${url}"></video>`;
+            video.src = url;
+            document.body.style.overflow = 'hidden'; // Trava o scroll atrás
         }
 
         function fecharPlayer() {
-            document.getElementById('modal-player').style.display = 'none';
-            document.getElementById('player-area').innerHTML = '';
+            const modal = document.getElementById('modal-player');
+            const video = document.getElementById('main-player');
+            modal.style.display = 'none';
+            video.pause();
+            video.src = "";
+            document.body.style.overflow = 'auto';
         }
 
         function filtrarLocal() {
