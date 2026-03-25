@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>CineStreamFlix | Automação Wanderson</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
+        :root { --primary: #e50914; --bg: #050505; --card-bg: #111; }
+        
+        body { background-color: var(--bg); color: white; font-family: 'Poppins', sans-serif; margin: 0; overflow-x: hidden; }
+        
+        header { 
+            padding: 40px 20px; 
+            text-align: center; 
+            background: linear-gradient(to bottom, #1a0202, transparent);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 { color: var(--primary); font-size: 2.5rem; margin: 0 0 20px 0; letter-spacing: 4px; text-transform: uppercase; }
+
+        .search-container { position: relative; max-width: 600px; margin: 0 auto; margin-bottom: 20px; }
+        .search-container input {
+            width: 100%;
+            padding: 15px 25px;
+            border-radius: 30px;
+            border: 2px solid #333;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            font-size: 1.1rem;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .category-title { padding-left: 20px; font-size: 1.8rem; color: #fff; margin: 40px 0 10px 40px; border-left: 5px solid var(--primary); }
+
+        .catalogo-row { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
+            gap: 25px; 
+            padding: 20px 40px 40px 40px; 
+        }
+
+        .item-card { 
+            background: var(--card-bg); 
+            border-radius: 12px; 
+            overflow: hidden; 
+            transition: 0.4s; 
+            cursor: pointer; 
+            border: 1px solid #222;
+            position: relative;
+        }
+        .item-card:hover { transform: scale(1.05); border-color: var(--primary); z-index: 5; }
+        
+        .video-thumb { 
+            width: 100%; 
+            height: 150px; 
+            background: linear-gradient(45deg, #111, #222);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+
+        .item-info { padding: 15px; text-align: center; font-size: 0.8rem; color: #aaa; }
+
+        #modal-player { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; }
+        .container-video { width: 100%; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #player-area { width: 100%; height: 80vh; background: #000; }
+        video { width: 100%; height: 100%; }
+        
+        .btn-fechar { position: absolute; top: 20px; right: 30px; color: #fff; font-size: 50px; cursor: pointer; z-index: 1001; }
+        .empty-msg { text-align: center; color: #666; grid-column: 1 / -1; padding: 50px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>CINESTREAMFLIX</h1>
+        <div class="search-container">
+            <input type="text" id="inputBusca" placeholder="Filtrar por data ou nome..." onkeyup="filtrarLocal()">
+        </div>
+    </header>
+
+    <h2 class="category-title">Adicionados Recentemente via Bot</h2>
+    <div id="lista-automatica" class="catalogo-row">
+        <p class="empty-msg">Aguardando o robô enviar filmes...</p>
+    </div>
+
+    <div id="modal-player">
+        <span class="btn-fechar" onclick="fecharPlayer()">&times;</span>
+        <div class="container-video">
+            <div id="player-area"></div>
+        </div>
+    </div>
+
+    <script>
+        async function carregarFilmesDoBot() {
+            const container = document.getElementById('lista-automatica');
+            
+            try {
+                const response = await fetch('filmes.json');
+                if (!response.ok) throw new Error("Arquivo não encontrado");
+                
+                const filmes = await response.json();
+                container.innerHTML = '';
+
+                filmes.reverse().forEach((filme, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'item-card';
+                    card.setAttribute('data-nome', filme.data);
+                    
+                    card.innerHTML = `
+                        <div class="video-thumb">🎬</div>
+                        <div class="item-info">
+                            <strong>Filme #${filmes.length - index}</strong><br>
+                            ${filme.data}
+                        </div>
+                    `;
+                    
+                    card.onclick = () => abrirPlayer(filme.url);
+                    container.appendChild(card);
+                });
+
+            } catch (err) {
+                console.log("Ainda não existem filmes no banco de dados.");
+            }
+        }
+
+        function abrirPlayer(url) {
+            const modal = document.getElementById('modal-player');
+            const playerArea = document.getElementById('player-area');
+            modal.style.display = 'block';
+            playerArea.innerHTML = `<video controls autoplay src="${url}"></video>`;
+        }
+
+        function fecharPlayer() {
+            document.getElementById('modal-player').style.display = 'none';
+            document.getElementById('player-area').innerHTML = '';
+        }
+
+        function filtrarLocal() {
+            const termo = document.getElementById('inputBusca').value.toLowerCase();
+            const cards = document.getElementsByClassName('item-card');
+            for (let card of cards) {
+                card.style.display = card.innerText.toLowerCase().includes(termo) ? "block" : "none";
+            }
+        }
+
+        window.onload = carregarFilmesDoBot;
+    </script>
+</body>
+</html>
