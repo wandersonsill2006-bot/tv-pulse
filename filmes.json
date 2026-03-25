@@ -46,5 +46,9 @@
   {
     "url": "https://api.telegram.org/file/bot8798544709:AAHJaM7FjCfamcVk0evkiB6TrLJSMVMIUVI/documents/file_1.mp4",
     "data": "Novo Filme"
+  },
+  {
+    "url": "https://api.telegram.org/file/bot8798544709:AAHJaM7FjCfamcVk0evkiB6TrLJSMVMIUVI/videos/file_2.mp4",
+    "data": "Novo Filme"
   }
 ]
