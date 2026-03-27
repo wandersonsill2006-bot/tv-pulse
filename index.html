@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="referrer" content="no-referrer">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
     <title>CineStreamFlix | Wanderson Pro</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
@@ -19,28 +17,22 @@
 
         .search-container { position: relative; max-width: 500px; margin: 0 auto; padding: 0 15px; }
         .search-container input { width: 100%; padding: 12px 20px 12px 45px; border-radius: 50px; border: 2px solid #222; background: rgba(15, 15, 15, 0.9); color: white; outline: none; box-sizing: border-box; }
-        
-        /* AJUSTE PARA O ÍCONE NÃO FICAR INVISÍVEL */
-        .search-container i { 
-            position: absolute; 
-            left: 30px; 
-            top: 50%; 
-            transform: translateY(-50%); 
-            color: white !important; 
-            display: inline-block !important;
-            visibility: visible !important;
-        }
+        .search-container i { position: absolute; left: 30px; top: 50%; transform: translateY(-50%); color: #666; }
 
         .catalogo-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; padding: 20px; }
 
         @media (max-width: 600px) {
             .catalogo-row { grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 10px; }
             h1 { font-size: 1.5rem; }
-            .item-card img { height: 250px !important; }
+            /* AJUSTE CAPA CELULAR */
+            .item-card img { height: 280px !important; }
         }
 
         .item-card { position: relative; background: var(--card-bg); border-radius: 10px; overflow: hidden; transition: 0.3s; cursor: pointer; border: 1px solid #222; }
-        .item-card img { width: 100%; height: 280px; object-fit: cover; display: block; }
+        
+        /* AJUSTE TAMANHO DA CAPA (Aumentado para 350px) */
+        .item-card img { width: 100%; height: 350px; object-fit: cover; display: block; }
+        
         .badge-idade { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-weight: bold; font-size: 0.8rem; z-index: 10; }
         .item-info { padding: 10px; text-align: center; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
